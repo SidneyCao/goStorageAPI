@@ -110,8 +110,8 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	if err != nil {
 		log.Printf("failed to open %v: %v\n", file, err)
 	}
-
-	mtype := mime.TypeByExtension("." + strings.Split(file, ".")[1])
+	fileArray := strings.Split(file, ".")
+	mtype := mime.TypeByExtension("." + fileArray[len(fileArray)-1])
 	fmt.Println(mtype)
 	ctx := context.Background()
 
