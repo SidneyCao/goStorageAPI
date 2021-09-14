@@ -111,7 +111,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	}
 
 	mtype := mime.TypeByExtension(file)
-
+	fmt.Println(mtype)
 	ctx := context.Background()
 
 	wc := c.Bucket(bucket).Object(object).NewWriter(ctx)
