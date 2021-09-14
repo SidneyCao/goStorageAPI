@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -14,8 +15,9 @@ import (
 )
 
 var (
-	bucket = flag.String("b", "", "bucket 默认为空")
-	file   = flag.String("f", "", "文件名 默认为空")
+	method = flag.String("m", "list", "方法名\nlist 列出bucket下的所有objects\nupload 上传文件\n")
+	bucket = flag.String("b", "", "bucket名(默认为空)")
+	files  = flag.String("f", "", "文件列表(默认为空)")
 )
 
 func main() {
@@ -32,16 +34,35 @@ func main() {
 	}
 	defer c.Close()
 
-	//fmt.Println(List(c, *bucket))
+	switch *method {
+	case "list":
+		res, err := List(c, *bucket)
+		if err != nil {
+			log.Panicf("failed to list: %v", err)
+		}
+		for _, line := range res {
+			fmt.Println(line)
+		}
+	case "upload":
+		f, err := os.Open(*files)
+		if err != nil {
+			log.Panicf("failed to open list file: %v", err)
+		}
+		defer f.Close()
+		br := bufio.NewReader(f)
+		for {
+			line, _, err := br.ReadLine()
+			if err == io.EOF {
+				break
+			}
+			err = Upload(c, *bucket, string(line), string(line))
+			if err != nil {
+				log.Printf("failed to upload %v: %v\n", string(line), err)
+			}
+		}
+	}
 
-	f, err := os.Open(*file)
-	if err != nil {
-		log.Panicf("failed to open file: %v", err)
-	}
-	err = Upload(c, *bucket, f, *file)
-	if err != nil {
-		log.Panicf("failed to open file: %v", err)
-	}
+	fmt.Println("上传完成")
 }
 
 //列出bucket下的object
@@ -69,17 +90,21 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 	return names, nil
 }
 
-//上传文件
-func Upload(c *storage.Client, bucket string, file *os.File, object string) error {
+//上传单个文件
+func Upload(c *storage.Client, bucket string, file string, object string) error {
+	f, err := os.Open(file)
+	if err != nil {
+		log.Printf("failed to open %v: %v\n", file, err)
+	}
 	ctx := context.Background()
 
 	wc := c.Bucket(bucket).Object(object).NewWriter(ctx)
-	if _, err := io.Copy(wc, file); err != nil {
+	if _, err := io.Copy(wc, f); err != nil {
 		return fmt.Errorf("io.Copy: %w", err)
 	}
 	if err := wc.Close(); err != nil {
 		return fmt.Errorf("Writer.Close: %w", err)
 	}
-	log.Printf("成功上传文件： %v\n", object)
+	log.Printf("successful to upload： %v\n", object)
 	return nil
 }
