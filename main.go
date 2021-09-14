@@ -8,9 +8,11 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 	"time"
 
 	storage "cloud.google.com/go/storage"
+	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/api/iterator"
 )
 
@@ -32,7 +34,13 @@ func main() {
 	if err != nil {
 		log.Panicf("falied to create client: %v", err)
 	}
+	//关闭client
 	defer c.Close()
+
+	//创建wait group
+	//wait group中始终有n+1个counter
+	var waitGroup sync.WaitGroup
+	waitGroup.Add(1)
 
 	switch *method {
 	case "list":
@@ -44,25 +52,29 @@ func main() {
 			fmt.Println(line)
 		}
 	case "upload":
+		//待上传文件以列表形式存储在文件中
+		//按行读取文件，每个文件以goroutines形式上传
 		f, err := os.Open(*files)
 		if err != nil {
 			log.Panicf("failed to open list file: %v", err)
 		}
+		//记得关闭文件
 		defer f.Close()
+		//按行读取文件
 		br := bufio.NewReader(f)
 		for {
 			line, _, err := br.ReadLine()
 			if err == io.EOF {
 				break
 			}
-			err = Upload(c, *bucket, string(line), string(line))
-			if err != nil {
-				log.Printf("failed to upload %v: %v\n", string(line), err)
-			}
+			waitGroup.Add(1)
+			go Upload(c, *bucket, string(line), string(line), &waitGroup)
 		}
 	}
-
-	fmt.Println("上传完成")
+	//decrease 最后一个counter
+	waitGroup.Done()
+	waitGroup.Wait()
+	log.Println("上传完成")
 }
 
 //列出bucket下的object
@@ -91,20 +103,31 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 }
 
 //上传单个文件
-func Upload(c *storage.Client, bucket string, file string, object string) error {
+func Upload(c *storage.Client, bucket string, file string, object string, waitGroup *sync.WaitGroup) {
+	//读取单个文件
 	f, err := os.Open(file)
 	if err != nil {
 		log.Printf("failed to open %v: %v\n", file, err)
 	}
+
+	mtype, err := mimetype.DetectFile(file)
+	if err != nil {
+		log.Printf("failed to detect ContentType %v: %v\n", file, err)
+	}
+
 	ctx := context.Background()
 
 	wc := c.Bucket(bucket).Object(object).NewWriter(ctx)
 	if _, err := io.Copy(wc, f); err != nil {
-		return fmt.Errorf("io.Copy: %w", err)
+		log.Printf("failed to uplaod %v: %v", file, err)
+		waitGroup.Done()
+		return
 	}
 	if err := wc.Close(); err != nil {
-		return fmt.Errorf("Writer.Close: %w", err)
+		log.Printf("Writer.Close: %v", err)
+		waitGroup.Done()
+		return
 	}
-	log.Printf("successful to upload： %v\n", object)
-	return nil
+	log.Printf("successful to upload： %v: %v\n", object, mtype.String())
+	waitGroup.Done()
 }
