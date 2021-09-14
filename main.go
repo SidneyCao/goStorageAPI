@@ -26,7 +26,7 @@ func main() {
 	//获取命令行参数
 	flag.Parse()
 	//通过系统变量来进行认证
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/Users/simoncao/bucket-private.json")
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/root/bucket-private.json")
 
 	//新建client
 	ctx := context.Background()
