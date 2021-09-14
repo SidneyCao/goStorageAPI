@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"os"
 	"sync"
 	"time"
 
 	storage "cloud.google.com/go/storage"
-	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/api/iterator"
 )
 
@@ -110,10 +110,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 		log.Printf("failed to open %v: %v\n", file, err)
 	}
 
-	mtype, err := mimetype.DetectFile(file)
-	if err != nil {
-		log.Printf("failed to detect ContentType %v: %v\n", file, err)
-	}
+	mtype := mime.TypeByExtension(file)
 
 	ctx := context.Background()
 
@@ -128,6 +125,6 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 		waitGroup.Done()
 		return
 	}
-	log.Printf("successful to upload： %v: %v\n", object, mtype.String())
+	log.Printf("successful to upload： %v: %v\n", object, mtype)
 	waitGroup.Done()
 }
