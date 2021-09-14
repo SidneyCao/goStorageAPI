@@ -9,6 +9,7 @@ import (
 	"log"
 	"mime"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -110,7 +111,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 		log.Printf("failed to open %v: %v\n", file, err)
 	}
 
-	mtype := mime.TypeByExtension(".js")
+	mtype := mime.TypeByExtension(strings.Split(file, ".")[1])
 	fmt.Println(mtype)
 	ctx := context.Background()
 
