@@ -26,7 +26,7 @@ fi
 
 #监听日志
 tail -f -n0 ${rsyncLog}| while read line; do
-        if echo "${line}"; then
+        if ${line}; then
                 fileName=$(echo "${line}" | cut -d] -f2 | sed "s/^ *//")
                 echo $fileName
         #        if [[ ${FileName} == receiving*  ]];then
