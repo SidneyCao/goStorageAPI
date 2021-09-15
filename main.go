@@ -138,7 +138,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 		return
 	}
 
-	//更新
+	//更新metadata
 	objectAttrsToUpdate := storage.ObjectAttrsToUpdate{
 		Metadata: map[string]string{
 			"Cache-Control": cacheMeta,
