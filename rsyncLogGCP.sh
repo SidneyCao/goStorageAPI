@@ -30,10 +30,12 @@ source ${scriptDir}/rsyncPara.sh
 tail -f -n0 ${rsyncLog}| while read line; do
         fileName=$(echo "${line}" | cut -d] -f2 | sed "s/^ *//")
         echo $fileName
-        if [[ ${FileName} == receiving file list  ]];then
+        taskID=$(echo "${line}" | cut -d] -f1 | cut -d[ -f2)
+        echo $taskID 
+        #if [[ ${FileName} == receiving file list  ]];then
         #                dateUpload=`date "+%Y-%m-%d %H:%M:%S"`
         #                echo "{\"startTime\":\"${dateUpload}\",\"status\":\"uploading\"}"  > ${monitorJson}
-        elif [[ ${FileName} != rsync* && ${FileName} != sent* ]];then
+        #elif [[ ${FileName} != rsync* && ${FileName} != sent* ]];then
         #                check_log
-        fi
+        #fi
 done
