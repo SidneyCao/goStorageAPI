@@ -14,6 +14,7 @@ fi
 scriptDir=$(cd `dirname $0`; pwd)
 logDir=/data/syncLog/${game}
 taskListDir=/data/taskList/${game}
+goApiDir=/data/goStorageAPI
 
 if [[ ! -d ${logDir} ]]; then
         mkdir -p ${logDir}
@@ -24,6 +25,8 @@ if [[ ! -d ${taskListDir} ]]; then
 fi
 
 source ${scriptDir}/rsyncPara.sh
+
+gs=`echo "${gstore}"|sed 's/gs:\/\///g'`
 
 function touchTask(){
         if [[ ${nocacheStatus} -eq 1 ]];then
@@ -52,7 +55,8 @@ tail -f -n0 ${rsyncLog}| while read line; do
                 dateUpload=`date "+%Y-%m-%d-%H-%M-%S"`
                 touchTask
         elif [[ ${fileName} == sent* ]];then
-                echo "执行"
+                go run ${goApiDir}/main.go -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload 
+                go run ${goApiDir}/main.go -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false
         else
                 addTask
         fi
