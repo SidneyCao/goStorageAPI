@@ -41,6 +41,7 @@ function addTask(){
                 fi
         else    
                 echo ''${srcDir}/${fileName}' 文件不存在'
+        fi
 }
 
 #监听日志
