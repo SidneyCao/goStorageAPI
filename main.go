@@ -21,7 +21,7 @@ var (
 	method = flag.String("m", "list", "方法名\nlist 列出bucket下的所有objects\nupload 上传文件\n")
 	bucket = flag.String("b", "", "bucket名(默认为空)")
 	files  = flag.String("f", "", "文件列表(默认为空)")
-	cache  = flag.String("c", "true", "是否缓存(默认为true)")
+	cache  = flag.String("c", "true", "是否缓存")
 )
 
 const (
