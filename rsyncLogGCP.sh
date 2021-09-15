@@ -44,7 +44,7 @@ function addTask(){
 tail -f -n0 ${rsyncLog}| while read line; do
         fileName=$(echo "${line}" | cut -d] -f2 | sed "s/^ *//")
         taskID=$(echo "${line}" | cut -d] -f1 | cut -d[ -f2)
-        if [[ ${fileName} == receiving file list  ]];then
+        if [[ ${fileName} == 'receiving file list'  ]];then
                 dateUpload=`date "+%Y-%m-%d %H:%M:%S"`
                 touchTask
         elif [[ ${fileName} != sent* ]];then
