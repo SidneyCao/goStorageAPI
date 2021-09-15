@@ -148,6 +148,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	if *cache == "false" {
 		objectAttrsToUpdate.Metadata["Cache-Control"] = noneCacheMeta
 	}
+	fmt.Println(objectAttrsToUpdate.Metadata)
 
 	if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
 		log.Printf("failed to update metadata of %v: %v", object, err)
