@@ -5,7 +5,7 @@
 game=$1
 
 rsyncLog=/var/log/rsyncd/${game}.log
-if [[ ! -f rsyncLog ]]; then 
+if [[ ! -f $rsyncLog ]]; then 
     echo "请输入正确的游戏名"
     exit 1
 fi
