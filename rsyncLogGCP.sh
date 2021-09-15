@@ -25,17 +25,31 @@ fi
 
 source ${scriptDir}/rsyncPara.sh
 
+function touchTask(){
+        if [[ ${nocacheStatus} -eq 1 ]];then
+                touch ${taskListDir}/${dateUpload}-$taskID-noCache
+        fi
+        touch ${taskListDir}/${dateUpload}-$taskID-cache
+}
+
+function addTask(){
+        if [[ ${nocacheStatus} -eq 1 ]] && [[ ${srcDir}/${fileName} == *${nocacheFile} ]];then 
+                echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-noCache
+        else 
+                echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-cache
+        fi
+}
 
 #监听日志
 tail -f -n0 ${rsyncLog}| while read line; do
         fileName=$(echo "${line}" | cut -d] -f2 | sed "s/^ *//")
-        echo $fileName
         taskID=$(echo "${line}" | cut -d] -f1 | cut -d[ -f2)
-        echo $taskID 
-        #if [[ ${FileName} == receiving file list  ]];then
-        #                dateUpload=`date "+%Y-%m-%d %H:%M:%S"`
-        #                echo "{\"startTime\":\"${dateUpload}\",\"status\":\"uploading\"}"  > ${monitorJson}
-        #elif [[ ${FileName} != rsync* && ${FileName} != sent* ]];then
-        #                check_log
-        #fi
+        if [[ ${fileName} == receiving file list  ]];then
+                dateUpload=`date "+%Y-%m-%d %H:%M:%S"`
+                touchTask
+        elif [[ ${fileName} != sent* ]];then
+                echo "执行"
+        else
+                addTask
+        fi
 done
