@@ -2,9 +2,9 @@
 
 case ${game} in
         test)
-                SrcDir=/data/test
-                Gstore=gs://wl-test
-                GStatus=1
+                srcDir=/data/test
+                gstore=gs://wl-test
+                gStatus=1
                 nocacheStatus=1
                 nocacheFile=index.html
 

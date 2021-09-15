@@ -25,8 +25,8 @@ var (
 )
 
 const (
-	cacheMeta     string = "public, max-age=864000"
-	noneCacheMeta string = "no-store"
+	cacheMeta   string = "public, max-age=864000"
+	noCacheMeta string = "no-store"
 )
 
 func main() {
@@ -143,7 +143,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	objectAttrsToUpdate.ContentType = mtype
 	objectAttrsToUpdate.CacheControl = cacheMeta
 	if *cache == "false" {
-		objectAttrsToUpdate.CacheControl = noneCacheMeta
+		objectAttrsToUpdate.CacheControl = noCacheMeta
 	}
 
 	if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {

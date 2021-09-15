@@ -23,15 +23,17 @@ if [[ ! -d ${taskListDir} ]]; then
     mkdir -p ${taskListDir}
 fi
 
+source ${scriptDir}/rsyncPara.sh
+
 
 #监听日志
 tail -f -n0 ${rsyncLog}| while read line; do
         fileName=$(echo "${line}" | cut -d] -f2 | sed "s/^ *//")
         echo $fileName
-        #        if [[ ${FileName} == receiving*  ]];then
+        if [[ ${FileName} == receiving file list  ]];then
         #                dateUpload=`date "+%Y-%m-%d %H:%M:%S"`
         #                echo "{\"startTime\":\"${dateUpload}\",\"status\":\"uploading\"}"  > ${monitorJson}
-        #        elif [[ ${FileName} != rsync* && ${FileName} != sent* ]];then
+        elif [[ ${FileName} != rsync* && ${FileName} != sent* ]];then
         #                check_log
-        #        fi
+        fi
 done
