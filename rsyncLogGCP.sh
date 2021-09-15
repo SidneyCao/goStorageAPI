@@ -2,7 +2,7 @@
 
 #准备工作
 
-$game=$1
+game=$1
 
 rsyncLog=/var/log/rsyncd/${game}.log
 if [[ ! -f rsyncLog ]]; then 
