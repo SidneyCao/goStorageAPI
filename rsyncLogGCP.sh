@@ -33,11 +33,14 @@ function touchTask(){
 }
 
 function addTask(){
-        if [[ ${nocacheStatus} -eq 1 ]] && [[ ${srcDir}/${fileName} == *${nocacheFile} ]];then 
-                echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-noCache
-        else 
-                echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-cache
-        fi
+        if [[ -f ${srcDir}/${fileName} ]];then
+                if [[ ${nocacheStatus} -eq 1 ]] && [[ ${srcDir}/${fileName} == *${nocacheFile} ]];then 
+                        echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-noCache
+                else 
+                        echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-cache
+                fi
+        else    
+                echo ''${srcDir}/${fileName}' 文件不存在'
 }
 
 #监听日志
