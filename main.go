@@ -21,6 +21,12 @@ var (
 	method = flag.String("m", "list", "方法名\nlist 列出bucket下的所有objects\nupload 上传文件\n")
 	bucket = flag.String("b", "", "bucket名(默认为空)")
 	files  = flag.String("f", "", "文件列表(默认为空)")
+	cache  = flag.String("c", "true", "是否缓存(默认为true)")
+)
+
+const (
+	cacheMeta     string = "public, max-age=864000"
+	noneCacheMeta string = "no-store"
 )
 
 func main() {
@@ -117,18 +123,36 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	}
 
 	ctx := context.Background()
-
-	wc := c.Bucket(bucket).Object(object).NewWriter(ctx)
-	if _, err := io.Copy(wc, f); err != nil {
+	//获取object
+	o := c.Bucket(bucket).Object(object)
+	//上传文件
+	w := o.NewWriter(ctx)
+	if _, err := io.Copy(w, f); err != nil {
 		log.Printf("failed to uplaod %v: %v", file, err)
 		waitGroup.Done()
 		return
 	}
-	if err := wc.Close(); err != nil {
+	if err := w.Close(); err != nil {
 		log.Printf("Writer.Close: %v", err)
 		waitGroup.Done()
 		return
 	}
-	log.Printf("successful to upload： %v: %v\n", object, mtype)
+
+	//更新
+	objectAttrsToUpdate := storage.ObjectAttrsToUpdate{
+		Metadata: map[string]string{
+			"Cache-Control": cacheMeta,
+			"Content-Type":  mtype,
+		},
+	}
+	if *cache == "false" {
+		objectAttrsToUpdate.Metadata["Cache-Control"] = noneCacheMeta
+	}
+
+	if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
+		log.Printf("failed to update metadata of %v: %v", object, err)
+	}
+
+	log.Printf("successful to upload： %v\n", object)
 	waitGroup.Done()
 }
