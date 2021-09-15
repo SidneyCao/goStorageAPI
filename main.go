@@ -105,14 +105,17 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 
 //上传单个文件
 func Upload(c *storage.Client, bucket string, file string, object string, waitGroup *sync.WaitGroup) {
+
+	//根据后缀检测ContentType
+	fileArray := strings.Split(file, ".")
+	mtype := mime.TypeByExtension("." + fileArray[len(fileArray)-1])
+
 	//读取单个文件
 	f, err := os.Open(file)
 	if err != nil {
 		log.Printf("failed to open %v: %v\n", file, err)
 	}
-	fileArray := strings.Split(file, ".")
-	mtype := mime.TypeByExtension("." + fileArray[len(fileArray)-1])
-	fmt.Println(mtype)
+
 	ctx := context.Background()
 
 	wc := c.Bucket(bucket).Object(object).NewWriter(ctx)
