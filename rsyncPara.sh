@@ -6,7 +6,7 @@ case ${game} in
                 gstore=gs://wl-test
                 gStatus=1
                 nocacheStatus=1
-                nocacheFile=index.html
+                nocacheFile=zip.min.js
         ;;
         *)
                 echo "${game}  is not exist"
