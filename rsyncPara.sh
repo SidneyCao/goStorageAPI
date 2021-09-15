@@ -7,7 +7,7 @@ case ${game} in
                 gStatus=1
                 nocacheStatus=1
                 nocacheFile=index.html
-
+        ;;
         *)
                 echo "${game}  is not exist"
         ;;
