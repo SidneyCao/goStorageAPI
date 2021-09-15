@@ -26,14 +26,14 @@ fi
 
 #监听日志
 tail -f -n0 ${rsyncLog}| while read line; do
-        echo ${line}
-        #if echo "${Line}"; then
-        #        FileName=$(echo "${Line}" | cut -d] -f2 | sed "s/^ *//")
+        if echo "${Line}"; then
+                fileName=$(echo "${Line}" | cut -d] -f2 | sed "s/^ *//")
+                echo $fileName
         #        if [[ ${FileName} == receiving*  ]];then
         #                dateUpload=`date "+%Y-%m-%d %H:%M:%S"`
         #                echo "{\"startTime\":\"${dateUpload}\",\"status\":\"uploading\"}"  > ${monitorJson}
         #        elif [[ ${FileName} != rsync* && ${FileName} != sent* ]];then
         #                check_log
         #        fi
-        #fi
+        fi
 done
