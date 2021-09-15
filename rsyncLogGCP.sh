@@ -15,11 +15,11 @@ scriptDir=$(cd `dirname $0`; pwd)
 logDir=/data/syncLog/${game}
 taskListDir=/data/taskList/${game}
 
-if [[ ! -d ${logDir}]]; then
+if [[ ! -d ${logDir} ]]; then
         mkdir -p ${logDir}
 fi
 
-if [[ ! -d ${taskListDir}]]; then
+if [[ ! -d ${taskListDir} ]]; then
     mkdir -p ${taskListDir}
 fi
 
