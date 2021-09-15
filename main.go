@@ -151,6 +151,8 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 
 	if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
 		log.Printf("failed to update metadata of %v: %v", object, err)
+		waitGroup.Done()
+		return
 	}
 
 	log.Printf("successful to upload： %v\n", object)
