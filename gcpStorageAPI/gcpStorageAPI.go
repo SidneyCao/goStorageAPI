@@ -173,4 +173,5 @@ func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGro
 		object := strings.TrimPrefix(string(line), *prefix)
 		Upload(c, *bucket, string(line), object, waitGroup)
 	}
+	return
 }
