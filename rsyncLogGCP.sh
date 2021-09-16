@@ -54,12 +54,12 @@ tail -f -n0 ${rsyncLog}| while read line; do
         if [[ ${fileName} == 'receiving file list'  ]];then
                 dateUpload=`date "+%Y_%m%d_%s"`
                 touchTask
-                echo '开始任务 '${taskID}'' >> ${taskListDir}/${dateUpload}-$taskID.log
+                echo '开始任务 '${taskID}'' >> ${taskLogDir}/${dateUpload}-$taskID.log
         elif [[ ${fileName} == sent* ]];then
                 echo '开始上传需要缓存的文件'
-                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload >> ${taskListDir}/${dateUpload}-$taskID.log
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload >> ${taskLogDir}/${dateUpload}-$taskID.log
                 echo '开始上传不需要缓存的文件'
-                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false >> ${taskListDir}/${dateUpload}-$taskID.log
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false >> ${taskLogDir}/${dateUpload}-$taskID.log
         else
                 addTask
         fi
