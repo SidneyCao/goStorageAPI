@@ -57,9 +57,9 @@ tail -f -n0 ${rsyncLog}| while read line; do
                 echo '开始任务 '${taskID}'' 
         elif [[ ${fileName} == sent* ]];then
                 echo '开始上传需要缓存的文件' 
-                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload -p ${srcDir}
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload -p ${srcDir}/
                 echo '开始上传不需要缓存的文件' 
-                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false -p ${srcDir}
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false -p ${srcDir}/
         else
                 addTask
         fi
