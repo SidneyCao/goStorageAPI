@@ -87,6 +87,7 @@ func main() {
 		}
 		close(workerChan)
 	}
+	fmt.Println(len(workerChan))
 	//decrease 最后一个counter
 	waitGroup.Done()
 	waitGroup.Wait()
