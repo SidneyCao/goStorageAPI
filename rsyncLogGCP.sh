@@ -12,19 +12,19 @@ fi
 
 
 scriptDir=$(cd `dirname $0`; pwd)
-logDir=/data/syncLog/${game}
+taskLogDir=/data/taskLog/${game}
 taskListDir=/data/taskList/${game}
 goApiDir=${scriptDir}/gcpStorageAPI
 
-if [[ ! -d ${logDir} ]]; then
-        mkdir -p ${logDir}
+if [[ ! -d ${taskLogDir} ]]; then
+        mkdir -p ${taskLogDir}
 fi
 
 if [[ ! -d ${taskListDir} ]]; then
     mkdir -p ${taskListDir}
 fi
 
-source ${scriptDir}/rsyncPara.sh
+source ${scriptDir}/getPara.sh
 
 gs=`echo "${gstore}"|sed 's/gs:\/\///g'`
 
@@ -52,11 +52,14 @@ tail -f -n0 ${rsyncLog}| while read line; do
         fileName=$(echo "${line}" | cut -d] -f2 | sed "s/^ *//")
         taskID=$(echo "${line}" | cut -d] -f1 | cut -d[ -f2)
         if [[ ${fileName} == 'receiving file list'  ]];then
-                dateUpload=`date "+%Y-%m-%d-%H-%M-%S"`
+                dateUpload=`date "+%Y_%m%d_%s"`
                 touchTask
+                echo '开始任务 '${taskID}'' >> ${taskListDir}/${dateUpload}-$taskID.log
         elif [[ ${fileName} == sent* ]];then
-                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload 
-                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false
+                echo '开始上传需要缓存的文件'
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload >> ${taskListDir}/${dateUpload}-$taskID.log
+                echo '开始上传不需要缓存的文件'
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false >> ${taskListDir}/${dateUpload}-$taskID.log
         else
                 addTask
         fi
