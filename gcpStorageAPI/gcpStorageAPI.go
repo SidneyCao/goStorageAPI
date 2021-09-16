@@ -163,11 +163,12 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	waitGroup.Done()
 }
 
+//工作池
 func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGroup) {
 	for line := range workerChan {
 		//移除前缀
 		object := strings.TrimPrefix(string(line), *prefix)
 		waitGroup.Add(1)
-		go Upload(c, *bucket, string(line), object, &waitGroup)
+		go Upload(c, *bucket, string(line), object, waitGroup)
 	}
 }
