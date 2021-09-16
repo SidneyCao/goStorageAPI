@@ -50,7 +50,7 @@ func main() {
 	//创建wait group
 	//wait group中始终有n+1个counter
 	var waitGroup sync.WaitGroup
-	//waitGroup.Add(1)
+	waitGroup.Add(1)
 
 	//创建worker队列
 	workerChan := make(chan string, 20)
@@ -86,7 +86,7 @@ func main() {
 		}
 	}
 	//decrease 最后一个counter
-	//waitGroup.Done()
+	waitGroup.Done()
 	waitGroup.Wait()
 	close(workerChan)
 	log.Println("上传完成")
@@ -167,7 +167,6 @@ func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGro
 	for line := range workerChan {
 		//移除前缀
 		object := strings.TrimPrefix(string(line), *prefix)
-		waitGroup.Add(1)
 		go Upload(c, *bucket, string(line), object, waitGroup)
 	}
 }
