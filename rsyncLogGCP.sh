@@ -14,7 +14,7 @@ fi
 scriptDir=$(cd `dirname $0`; pwd)
 logDir=/data/syncLog/${game}
 taskListDir=/data/taskList/${game}
-goApiDir=/data/goStorageAPI
+goApiDir=${scriptDir}/gcpStorageAPI
 
 if [[ ! -d ${logDir} ]]; then
         mkdir -p ${logDir}
@@ -55,8 +55,8 @@ tail -f -n0 ${rsyncLog}| while read line; do
                 dateUpload=`date "+%Y-%m-%d-%H-%M-%S"`
                 touchTask
         elif [[ ${fileName} == sent* ]];then
-                go run ${goApiDir}/main.go -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload 
-                go run ${goApiDir}/main.go -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload 
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false
         else
                 addTask
         fi
