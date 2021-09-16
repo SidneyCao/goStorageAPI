@@ -84,6 +84,7 @@ func main() {
 			}
 			waitGroup.Add(1)
 			workerChan <- string(line)
+			fmt.Println(len(workerChan))
 			worker(workerChan, c, &waitGroup)
 		}
 		close(workerChan)
@@ -173,5 +174,4 @@ func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGro
 		object := strings.TrimPrefix(string(line), *prefix)
 		Upload(c, *bucket, string(line), object, waitGroup)
 	}
-	return
 }
