@@ -170,10 +170,10 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 
 //工作池
 func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGroup) {
-	for line := range workerChan {
-		//移除前缀
-		object := strings.TrimPrefix(string(line), *prefix)
-		Upload(c, *bucket, string(line), object, waitGroup)
-		fmt.Printf("channum %d\n", len(workerChan))
-	}
+	line := <-workerChan
+	//移除前缀
+	object := strings.TrimPrefix(string(line), *prefix)
+	Upload(c, *bucket, string(line), object, waitGroup)
+	fmt.Printf("channum %d\n", len(workerChan))
+
 }
