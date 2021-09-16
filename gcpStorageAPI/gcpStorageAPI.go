@@ -9,6 +9,7 @@ import (
 	"log"
 	"mime"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -91,7 +92,6 @@ func main() {
 	waitGroup.Done()
 	waitGroup.Wait()
 	log.Println("上传完成")
-	fmt.Println(len(workerChan))
 }
 
 //列出bucket下的object
@@ -121,6 +121,7 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 
 //上传单个文件
 func Upload(c *storage.Client, bucket string, file string, object string, waitGroup *sync.WaitGroup) {
+	fmt.Println(runtime.NumGoroutine())
 
 	defer waitGroup.Done()
 
