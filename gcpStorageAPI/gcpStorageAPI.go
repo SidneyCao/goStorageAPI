@@ -25,7 +25,7 @@ var (
 	files  = flag.String("f", "", "文件列表 (默认为空)")
 	cache  = flag.String("c", "true", "是否缓存")
 	prefix = flag.String("p", "", "需要移除的文件前缀 (默认为空)")
-	//thread = flag.Int("t", 5, "最大协程数 (默认为5)")
+	thread = flag.Int("t", 5, "最大协程数 (默认为5)")
 )
 
 //缓存header内容
@@ -55,7 +55,7 @@ func main() {
 	waitGroup.Add(1)
 
 	//创建worker队列
-	//workerChan := make(chan string, *thread)
+	workerChan := make(chan string, *thread)
 
 	switch *method {
 	case "list":
@@ -83,11 +83,10 @@ func main() {
 				break
 			}
 			waitGroup.Add(1)
-			//workerChan <- string(line)
-			object := strings.TrimPrefix(string(line), *prefix)
-			go Upload(c, *bucket, string(line), object, &waitGroup)
+			workerChan <- string(line)
+			go worker(workerChan, c, &waitGroup)
 		}
-		//close(workerChan)
+		close(workerChan)
 	}
 	//decrease 最后一个counter
 	waitGroup.Done()
@@ -167,7 +166,6 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	log.Printf("successful to upload： %v\n", object)
 }
 
-/**
 //工作池
 func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGroup) {
 	for line := range workerChan {
@@ -176,4 +174,3 @@ func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGro
 		go Upload(c, *bucket, string(line), object, waitGroup)
 	}
 }
-**/
