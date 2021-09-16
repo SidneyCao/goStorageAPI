@@ -22,6 +22,7 @@ var (
 	bucket = flag.String("b", "", "bucket名 (默认为空)")
 	files  = flag.String("f", "", "文件列表 (默认为空)")
 	cache  = flag.String("c", "true", "是否缓存")
+	prefix = flag.String("p", "", "需要移除的文件前缀 (默认为空)")
 )
 
 const (
@@ -74,8 +75,10 @@ func main() {
 			if err == io.EOF {
 				break
 			}
+			//移除前缀
+			object := strings.TrimPrefix(string(line), *prefix)
 			waitGroup.Add(1)
-			go Upload(c, *bucket, string(line), string(line), &waitGroup)
+			go Upload(c, *bucket, string(line), object, &waitGroup)
 		}
 	}
 	//decrease 最后一个counter
