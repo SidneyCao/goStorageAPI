@@ -132,6 +132,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	if err != nil {
 		log.Printf("failed to open %v: %v\n", file, err)
 	}
+	defer f.Close()
 
 	ctx := context.Background()
 	//获取object
