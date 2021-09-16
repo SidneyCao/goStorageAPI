@@ -17,6 +17,7 @@ import (
 	"google.golang.org/api/iterator"
 )
 
+//flag
 var (
 	method = flag.String("m", "list", "方法名\nlist 列出bucket下的所有objects\nupload 上传文件\n")
 	bucket = flag.String("b", "", "bucket名 (默认为空)")
@@ -25,6 +26,7 @@ var (
 	prefix = flag.String("p", "", "需要移除的文件前缀 (默认为空)")
 )
 
+//缓存header内容
 const (
 	cacheMeta   string = "public, max-age=864000"
 	noCacheMeta string = "no-store"
@@ -49,6 +51,9 @@ func main() {
 	//wait group中始终有n+1个counter
 	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
+
+	//创建worker队列
+	workerChan := make(chan string, 20)
 
 	switch *method {
 	case "list":
@@ -75,10 +80,9 @@ func main() {
 			if err == io.EOF {
 				break
 			}
-			//移除前缀
-			object := strings.TrimPrefix(string(line), *prefix)
 			waitGroup.Add(1)
-			go Upload(c, *bucket, string(line), object, &waitGroup)
+			workerChan <- string(line)
+			go worker(workerChan, c, &waitGroup)
 		}
 	}
 	//decrease 最后一个counter
@@ -157,4 +161,13 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 
 	log.Printf("successful to upload： %v\n", object)
 	waitGroup.Done()
+}
+
+func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGroup) {
+	for line := range workerChan {
+		//移除前缀
+		object := strings.TrimPrefix(string(line), *prefix)
+		waitGroup.Add(1)
+		go Upload(c, *bucket, string(line), object, &waitGroup)
+	}
 }
