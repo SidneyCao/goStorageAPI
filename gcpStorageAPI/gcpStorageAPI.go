@@ -84,6 +84,7 @@ func main() {
 			}
 			waitGroup.Add(1)
 			workerChan <- string(line)
+			fmt.Println(workerChan)
 			worker(workerChan, c, &waitGroup)
 		}
 		close(workerChan)
