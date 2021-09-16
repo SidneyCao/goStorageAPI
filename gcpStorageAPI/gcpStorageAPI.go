@@ -85,11 +85,11 @@ func main() {
 			workerChan <- string(line)
 			go worker(workerChan, c, &waitGroup)
 		}
+		close(workerChan)
 	}
 	//decrease 最后一个counter
 	waitGroup.Done()
 	waitGroup.Wait()
-	close(workerChan)
 	log.Println("上传完成")
 }
 
