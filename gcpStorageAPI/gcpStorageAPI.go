@@ -87,11 +87,11 @@ func main() {
 		}
 		close(workerChan)
 	}
-	fmt.Println(len(workerChan))
 	//decrease 最后一个counter
 	waitGroup.Done()
 	waitGroup.Wait()
 	log.Println("上传完成")
+	fmt.Println(len(workerChan))
 }
 
 //列出bucket下的object
