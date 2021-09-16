@@ -119,6 +119,8 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 //上传单个文件
 func Upload(c *storage.Client, bucket string, file string, object string, waitGroup *sync.WaitGroup) {
 
+	defer waitGroup.Done()
+
 	//根据后缀检测ContentType
 	fileArray := strings.Split(file, ".")
 	mtype := mime.TypeByExtension("." + fileArray[len(fileArray)-1])
@@ -136,12 +138,10 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	w := o.NewWriter(ctx)
 	if _, err := io.Copy(w, f); err != nil {
 		log.Printf("failed to uplaod %v: %v", file, err)
-		waitGroup.Done()
 		return
 	}
 	if err := w.Close(); err != nil {
 		log.Printf("Writer.Close: %v", err)
-		waitGroup.Done()
 		return
 	}
 
@@ -155,12 +155,10 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 
 	if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
 		log.Printf("failed to update metadata of %v: %v", object, err)
-		waitGroup.Done()
 		return
 	}
 
 	log.Printf("successful to upload： %v\n", object)
-	waitGroup.Done()
 }
 
 //工作池
