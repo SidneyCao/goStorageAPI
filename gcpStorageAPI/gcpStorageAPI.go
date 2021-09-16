@@ -55,7 +55,7 @@ func main() {
 	waitGroup.Add(1)
 
 	//创建worker队列
-	workerChan := make(chan string, *thread)
+	//workerChan := make(chan string, *thread)
 
 	switch *method {
 	case "list":
@@ -83,10 +83,11 @@ func main() {
 				break
 			}
 			waitGroup.Add(1)
-			workerChan <- string(line)
-			go worker(workerChan, c, &waitGroup)
+			//workerChan <- string(line)
+			object := strings.TrimPrefix(string(line), *prefix)
+			go Upload(c, *bucket, string(line), object, &waitGroup)
 		}
-		close(workerChan)
+		//close(workerChan)
 	}
 	//decrease 最后一个counter
 	waitGroup.Done()
@@ -166,6 +167,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	log.Printf("successful to upload： %v\n", object)
 }
 
+/**
 //工作池
 func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGroup) {
 	for line := range workerChan {
@@ -174,3 +176,4 @@ func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGro
 		go Upload(c, *bucket, string(line), object, waitGroup)
 	}
 }
+**/
