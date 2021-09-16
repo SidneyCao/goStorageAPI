@@ -123,7 +123,7 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 
 //上传单个文件
 func Upload(c *storage.Client, bucket string, file string, object string, waitGroup *sync.WaitGroup) {
-	fmt.Println(runtime.NumGoroutine())
+	fmt.Printf("goroutine %d\n", runtime.NumGoroutine())
 
 	defer waitGroup.Done()
 
