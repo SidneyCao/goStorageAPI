@@ -171,6 +171,6 @@ func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGro
 	for line := range workerChan {
 		//移除前缀
 		object := strings.TrimPrefix(string(line), *prefix)
-		Upload(c, *bucket, string(line), object, waitGroup)
+		go Upload(c, *bucket, string(line), object, waitGroup)
 	}
 }
