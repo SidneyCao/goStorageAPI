@@ -61,7 +61,7 @@ storage golang API，用于监听rsync日志，并批量异步上传文件到对
 rsync -av *{YOUR_FILE}* --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}  
 上传后文件会自动同步到bucket  
 测试链接：  
-https://*{DOMAIN}*/*{YOUR_FILE}  
+https://*{DOMAIN}*/*{YOUR_FILE}*  
 
 请勿使用rsync本地的相对位置，这样上传的文件位置会不对  
 举例：  
