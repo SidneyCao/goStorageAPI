@@ -39,6 +39,10 @@ var waitGroup sync.WaitGroup
 func main() {
 	//获取命令行参数
 	flag.Parse()
+
+	//日志输出到stdout
+	log.SetOutput(os.Stdout)
+
 	//通过系统变量来进行认证
 	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/root/bucket-private.json")
 
@@ -122,7 +126,6 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 //上传单个文件
 func Upload(c *storage.Client, bucket string, file string, object string, jobChan chan bool) {
 	defer waitGroup.Done()
-
 	jobChan <- true
 
 	//根据后缀检测Content-Type
