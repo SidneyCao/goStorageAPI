@@ -9,6 +9,7 @@ import (
 	"log"
 	"mime"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -36,6 +37,9 @@ const (
 //创建wait group
 var waitGroup sync.WaitGroup
 
+//错误日志输出到stderr
+var logerr *log.Logger = log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
+
 func main() {
 	//获取命令行参数
 	flag.Parse()
@@ -50,7 +54,7 @@ func main() {
 	ctx := context.Background()
 	c, err := storage.NewClient(ctx)
 	if err != nil {
-		log.Panicf("falied to create client: %v", err)
+		logerr.Panicf("falied to create client: %v", err)
 	}
 	//关闭client
 	defer c.Close()
@@ -65,7 +69,7 @@ func main() {
 	case "list":
 		res, err := List(c, *bucket)
 		if err != nil {
-			log.Panicf("failed to list: %v", err)
+			logerr.Panicf("failed to list: %v", err)
 		}
 		for _, line := range res {
 			fmt.Println(line)
@@ -75,7 +79,7 @@ func main() {
 		//按行读取文件，每个文件以goroutines形式上传
 		f, err := os.Open(*files)
 		if err != nil {
-			log.Panicf("failed to open list file: %v", err)
+			logerr.Panicf("failed to open list file: %v", err)
 		}
 		//记得关闭文件
 		defer f.Close()
@@ -128,6 +132,8 @@ func Upload(c *storage.Client, bucket string, file string, object string, jobCha
 	defer waitGroup.Done()
 	jobChan <- true
 
+	fmt.Printf("goroutine num %d\n", runtime.NumGoroutine())
+
 	//根据后缀检测Content-Type
 	fileArray := strings.Split(file, ".")
 	mtype := mime.TypeByExtension("." + fileArray[len(fileArray)-1])
@@ -138,7 +144,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, jobCha
 	//读取单个文件
 	f, err := os.Open(file)
 	if err != nil {
-		log.Printf("failed to open %v: %v\n", file, err)
+		logerr.Printf("failed to open %v: %v\n", file, err)
 		<-jobChan
 		return
 	}
@@ -150,12 +156,12 @@ func Upload(c *storage.Client, bucket string, file string, object string, jobCha
 	//上传文件
 	w := o.NewWriter(ctx)
 	if _, err := io.Copy(w, f); err != nil {
-		log.Printf("failed to uplaod %v: %v", file, err)
+		logerr.Printf("failed to uplaod %v: %v", file, err)
 		<-jobChan
 		return
 	}
 	if err := w.Close(); err != nil {
-		log.Printf("Writer.Close: %v", err)
+		logerr.Printf("Writer.Close: %v", err)
 		<-jobChan
 		return
 	}
@@ -169,7 +175,7 @@ func Upload(c *storage.Client, bucket string, file string, object string, jobCha
 	}
 
 	if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
-		log.Printf("failed to update metadata of %v: %v", object, err)
+		logerr.Printf("failed to update metadata of %v: %v", object, err)
 		<-jobChan
 		return
 	}
