@@ -34,6 +34,9 @@ const (
 	noCacheMeta string = "no-store"
 )
 
+//创建wait group
+var waitGroup sync.WaitGroup
+
 func main() {
 	//获取命令行参数
 	flag.Parse()
@@ -49,13 +52,11 @@ func main() {
 	//关闭client
 	defer c.Close()
 
-	//创建wait group
 	//wait group中始终有n+1个counter
-	var waitGroup sync.WaitGroup
 	waitGroup.Add(1)
 
-	//创建worker队列
-	workerChan := make(chan string, *thread)
+	//创建job队列
+	jobChan := make(chan bool, *thread)
 
 	switch *method {
 	case "list":
@@ -82,14 +83,10 @@ func main() {
 			if err == io.EOF {
 				break
 			}
-
+			object := strings.TrimPrefix(string(line), *prefix)
 			waitGroup.Add(1)
-			workerChan <- string(line)
-			fmt.Printf("channum %d\n", len(workerChan))
-			go worker(workerChan, c, &waitGroup)
-
+			go Upload(c, *bucket, string(line), object, jobChan)
 		}
-		close(workerChan)
 	}
 	//decrease 最后一个counter
 	waitGroup.Done()
@@ -123,10 +120,12 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 }
 
 //上传单个文件
-func Upload(c *storage.Client, bucket string, file string, object string, waitGroup *sync.WaitGroup) {
+func Upload(c *storage.Client, bucket string, file string, object string, jobChan chan bool) {
 	fmt.Printf("goroutine %d\n", runtime.NumGoroutine())
 
 	defer waitGroup.Done()
+
+	jobChan <- true
 
 	//根据后缀检测ContentType
 	fileArray := strings.Split(file, ".")
@@ -136,6 +135,8 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	f, err := os.Open(file)
 	if err != nil {
 		log.Printf("failed to open %v: %v\n", file, err)
+		<-jobChan
+		return
 	}
 	defer f.Close()
 
@@ -146,10 +147,12 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 	w := o.NewWriter(ctx)
 	if _, err := io.Copy(w, f); err != nil {
 		log.Printf("failed to uplaod %v: %v", file, err)
+		<-jobChan
 		return
 	}
 	if err := w.Close(); err != nil {
 		log.Printf("Writer.Close: %v", err)
+		<-jobChan
 		return
 	}
 
@@ -163,18 +166,21 @@ func Upload(c *storage.Client, bucket string, file string, object string, waitGr
 
 	if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
 		log.Printf("failed to update metadata of %v: %v", object, err)
+		<-jobChan
 		return
 	}
 
 	log.Printf("successful to upload： %v\n", object)
+	<-jobChan
 }
 
+/***
 //工作池
 func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGroup) {
 	for line := range workerChan {
 		//移除前缀
 		object := strings.TrimPrefix(string(line), *prefix)
 		Upload(c, *bucket, string(line), object, waitGroup)
-		fmt.Printf("channum %d\n", len(workerChan))
 	}
 }
+***/
