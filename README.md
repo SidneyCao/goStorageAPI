@@ -48,7 +48,7 @@ storage golang API，用于监听rsync日志，并批量异步上传文件到对
     -p string
     	需要移除的文件前缀 (默认为空)
     -t int
-    	最大协程数 (默认为5) (default 5)
+    	最大协程数 (默认为5)
 ```
 5. 回到上层目录，cd ../
 6. 修改 getPara.sh 中的内容，添加对应的游戏名，rsync源，bucket名，缓存选项
