@@ -4,20 +4,20 @@ storage golang API，用于监听rsync日志，并批量异步上传文件到对
 目前仅支持GCP Storage，后续计划添加AWS S3。
 
 ## 原理
-监听rsync日志中的事件  
+监听rsync日志中的事件, 此处 taskID=13836  
 ```
 2021/09/15 07:57:23 [13836] rsync to test from x@UNKNOWN (x.x.x.x)
 2021/09/15 07:57:23 [13836] receiving file list
 2021/09/15 07:57:23 [13836] test/sync.txt
 ...
 2021/09/15 07:57:24 [13836] sent 2392 bytes  received 1227017 bytes  total size 1220788
-2021/09/15 07:58:25 [13847] rsync to test from test@UNKNOWN (x.x.x.x)
 ```
 判断文件是否需要缓存，
 并将文件写入  
 /data/taskList/*{GAME_NAME}*/*{%Y_%M%d_%s}*-*{taskID}*-cache  
 或 /data/taskList/*{GAME_NAME}*/*{%Y_%M%d_%s}*-*{taskID}*-noCache  
 调用gcp storage golang api 进行一次认证，并通过goroutine批量异步上传  
+
 
 ## 启动前准备：
 1. 首先部署好rsyncd服务，rsync日志需要在 /var/log/rsyncd/*{GAME_NAME}*.log  
