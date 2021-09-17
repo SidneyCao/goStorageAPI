@@ -3,6 +3,21 @@
 storage golang API，用于监听rsync日志，并批量异步上传文件到对应bucket。  
 目前仅支持GCP Storage，后续计划添加AWS S3。
 
+# 原理
+监听rsync日志中的事件  
+```
+2021/09/15 07:57:23 [13836] rsync to test from x@UNKNOWN (x.x.x.x)
+2021/09/15 07:57:23 [13836] receiving file list
+2021/09/15 07:57:23 [13836] test/sync.txt
+...
+2021/09/15 07:57:24 [13836] sent 2392 bytes  received 1227017 bytes  total size 1220788
+2021/09/15 07:58:25 [13847] rsync to test from test@UNKNOWN (x.x.x.x)
+```
+判断文件是否需要缓存，
+并将文件写入 /data/taskList/*{GAME_NAME}*/*{%Y_%M%d_%s}*-*{taskID}*-cache 或 /data/taskList/*{GAME_NAME}*/*{%Y_%M%d_%s}*-*{taskID}*-noCache  
+调用gcp storage golang api 进行一次认证，并通过goroutine批量异步上传  
+
+
 # 启动方法：  
 1. git clone https://github.com/SidneyCao/goStorageAPI.git  
 2. cd goStorageAPI/gcpStorageAPI
@@ -27,7 +42,13 @@ storage golang API，用于监听rsync日志，并批量异步上传文件到对
     -t int
     	最大协程数 (默认为5) (default 5)
 ```
-4. cd ../
-5. 修改 getPara.sh 中的内容，添加对应的游戏名，rsync源
-5. sh rsyncLogGCP.sh *{GAME_NAME}*
+5. 回到上层目录，cd ../
+6. 修改 getPara.sh 中的内容，添加对应的游戏名，rsync源，bucket名，缓存选项
+7. 开始监听rsync日志，sh rsyncLogGCP.sh *{GAME_NAME}*
+8. 成功上传的日志会输入到stdout，错误日志会通过stderr输入到 /data/taskLog/*{GAME_NAME}*/下
+9. 任务状态会实时更新到 /data/taskLog/*{GAME_NAME}*/result.html 中，后续可以通过nginx提供给合作方
+
+
+
+
 
