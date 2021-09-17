@@ -125,12 +125,13 @@ func Upload(c *storage.Client, bucket string, file string, object string, jobCha
 
 	jobChan <- true
 
-	//默认 Content-Type
-	mtype := "application/octet-stream"
 	//根据后缀检测Content-Type
 	fileArray := strings.Split(file, ".")
-	mtype = mime.TypeByExtension("." + fileArray[len(fileArray)-1])
-
+	mtype := mime.TypeByExtension("." + fileArray[len(fileArray)-1])
+	if mtype == "" {
+		//默认 Content-Type
+		mtype = "application/octet-stream"
+	}
 	//读取单个文件
 	f, err := os.Open(file)
 	if err != nil {
