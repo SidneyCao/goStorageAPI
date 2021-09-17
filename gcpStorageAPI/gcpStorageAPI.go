@@ -9,7 +9,6 @@ import (
 	"log"
 	"mime"
 	"os"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -88,6 +87,7 @@ func main() {
 			go Upload(c, *bucket, string(line), object, jobChan)
 		}
 	}
+	close(jobChan)
 	//decrease 最后一个counter
 	waitGroup.Done()
 	waitGroup.Wait()
@@ -121,8 +121,6 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 
 //上传单个文件
 func Upload(c *storage.Client, bucket string, file string, object string, jobChan chan bool) {
-	fmt.Printf("goroutine %d\n", runtime.NumGoroutine())
-
 	defer waitGroup.Done()
 
 	jobChan <- true
@@ -173,14 +171,3 @@ func Upload(c *storage.Client, bucket string, file string, object string, jobCha
 	log.Printf("successful to upload： %v\n", object)
 	<-jobChan
 }
-
-/***
-//工作池
-func worker(workerChan <-chan string, c *storage.Client, waitGroup *sync.WaitGroup) {
-	for line := range workerChan {
-		//移除前缀
-		object := strings.TrimPrefix(string(line), *prefix)
-		Upload(c, *bucket, string(line), object, waitGroup)
-	}
-}
-***/
