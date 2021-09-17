@@ -82,11 +82,11 @@ func main() {
 			if err == io.EOF {
 				break
 			}
-			fmt.Printf("debug %s\n", string(line))
+
 			waitGroup.Add(1)
 			workerChan <- string(line)
 			fmt.Printf("channum %d\n", len(workerChan))
-			worker(workerChan, c, &waitGroup)
+			go worker(workerChan, c, &waitGroup)
 
 		}
 		close(workerChan)
