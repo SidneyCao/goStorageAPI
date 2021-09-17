@@ -77,7 +77,7 @@ https://*{DOMAIN}*/test.txt
 正确的做法应该是：  
 rsync -av test/test.txt --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}/test/   
 上传后的链接：  
-https://*{DOMAIN}*/test/test.txt  
+https://*{DOMAIN}*/test/test.txt   
 
 
 上传目录同理
