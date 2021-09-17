@@ -87,10 +87,10 @@ func main() {
 			go Upload(c, *bucket, string(line), object, jobChan)
 		}
 	}
-	close(jobChan)
 	//decrease 最后一个counter
 	waitGroup.Done()
 	waitGroup.Wait()
+	close(jobChan)
 	log.Println("上传完成")
 }
 
