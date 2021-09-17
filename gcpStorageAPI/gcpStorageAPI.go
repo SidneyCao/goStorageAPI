@@ -9,7 +9,6 @@ import (
 	"log"
 	"mime"
 	"os"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -131,8 +130,6 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 func Upload(c *storage.Client, bucket string, file string, object string, jobChan chan bool) {
 	defer waitGroup.Done()
 	jobChan <- true
-
-	fmt.Printf("goroutine num %d\n", runtime.NumGoroutine())
 
 	//根据后缀检测Content-Type
 	fileArray := strings.Split(file, ".")
