@@ -54,17 +54,18 @@ tail -f -n0 ${rsyncLog}| while read line; do
         taskID=$(echo "${line}" | cut -d] -f1 | cut -d[ -f2)
         if [[ ${fileName} == 'receiving file list'  ]];then
                 dateUpload=`date "+%Y_%m%d_%s"`
+                dateUploadOF=`date "+%Y-%m-%d %H:%M:%S"`
                 touchTask
                 echo '开始任务 '${taskID}'' 
-                echo '{"taskID":"'${taskID}'","startTime":"'${dateUpload}'","status":"running"}' > ${taskResult}
+                echo '{"taskID":"'${taskID}'","startTime":"'${dateUploadOF}'","status":"running"}' > ${taskResult}
         elif [[ ${fileName} == sent* ]];then
                 echo '开始上传需要缓存的文件'  
                 ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload -p ${srcDir}/ -t 20 2>> ${taskLogDir}/${dateUpload}-$taskID.log
                 echo '开始上传不需要缓存的文件' 
                 ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false -p ${srcDir}/ -t 20 2>> ${taskLogDir}/${dateUpload}-$taskID.log
-                errNum=`wc -l ${taskLogDir}/${dateUpload}-$taskID.log`
-                dateComplete=`date "+%Y_%m%d_%s"`
-                echo '{"taskID":"'${taskID}'","startTime":"'${dateComplete}'","status":"completed","errNum":"'${errNum}'"}' > ${taskResult}
+                errNum=`wc -l ${taskLogDir}/${dateUpload}-$taskID.log | awk -F' ' '{print $1}'`
+                dateComplete=`date "+%Y-%m-%d %H:%M:%S"`
+                echo '{"taskID":"'${taskID}'","completeTime":"'${dateComplete}'","status":"completed","errNum":"'${errNum}'"}' > ${taskResult}
         else
                 addTask
         fi
