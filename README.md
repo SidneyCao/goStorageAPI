@@ -63,7 +63,7 @@ rsync -av *{YOUR_FILE}* --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNA
 测试链接：  
 https://*{DOMAIN}*/*{YOUR_FILE}*  
 
-请勿使用rsync本地的相对位置，这样上传的文件位置会不对  
+请勿依赖rsync本地的相对位置，这样上传的文件位置会不对  
 举例：  
 rsync -av test.txt --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}  
 上传后的链接：  
