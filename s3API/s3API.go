@@ -1,1 +1,7 @@
-package s3api
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("starting...")
+}
