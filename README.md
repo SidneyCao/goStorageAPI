@@ -1,5 +1,5 @@
 # goStorageAPI  
-自用小工具  
+小工具  
 storage golang API，用于监听rsync日志，并批量异步上传文件到对应bucket。  
 目前仅支持GCP Storage，后续计划添加AWS S3。
 
