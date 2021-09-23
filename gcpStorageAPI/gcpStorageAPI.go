@@ -39,68 +39,6 @@ var waitGroup sync.WaitGroup
 //错误日志输出到stderr
 var logerr *log.Logger = log.New(os.Stderr, "", log.Ldate|log.Ltime|log.Lshortfile)
 
-func main() {
-	//获取命令行参数
-	flag.Parse()
-
-	//日志输出到stdout
-	log.SetOutput(os.Stdout)
-
-	//通过系统变量来进行认证
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/root/bucket-private.json")
-
-	//新建client
-	ctx := context.Background()
-	c, err := storage.NewClient(ctx)
-	if err != nil {
-		logerr.Panicf("falied to create client: %v", err)
-	}
-	//关闭client
-	defer c.Close()
-
-	//wait group中始终有n+1个counter
-	waitGroup.Add(1)
-
-	//创建job队列
-	jobChan := make(chan bool, *thread)
-
-	switch *method {
-	case "list":
-		res, err := List(c, *bucket)
-		if err != nil {
-			logerr.Panicf("failed to list: %v", err)
-		}
-		for _, line := range res {
-			fmt.Println(line)
-		}
-	case "upload":
-		//待上传文件以列表形式存储在文件中
-		//按行读取文件，每个文件以goroutines形式上传
-		f, err := os.Open(*files)
-		if err != nil {
-			logerr.Panicf("failed to open list file: %v", err)
-		}
-		//记得关闭文件
-		defer f.Close()
-		//按行读取文件
-		br := bufio.NewReader(f)
-		for {
-			line, _, err := br.ReadLine()
-			if err == io.EOF {
-				break
-			}
-			object := strings.TrimPrefix(string(line), *prefix)
-			waitGroup.Add(1)
-			go Upload(c, *bucket, string(line), object, jobChan)
-		}
-	}
-	//decrease 最后一个counter
-	waitGroup.Done()
-	waitGroup.Wait()
-	close(jobChan)
-	log.Println("上传完成")
-}
-
 //列出bucket下的object
 func List(c *storage.Client, bucket string) ([]string, error) {
 	//利用context设定超时时间
@@ -179,4 +117,66 @@ func Upload(c *storage.Client, bucket string, file string, object string, jobCha
 
 	log.Printf("successful to upload： %v\n", object)
 	<-jobChan
+}
+
+func main() {
+	//获取命令行参数
+	flag.Parse()
+
+	//日志输出到stdout
+	log.SetOutput(os.Stdout)
+
+	//通过系统变量来进行认证
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "/root/bucket-private.json")
+
+	//新建client
+	ctx := context.Background()
+	c, err := storage.NewClient(ctx)
+	if err != nil {
+		logerr.Panicf("falied to create client: %v", err)
+	}
+	//关闭client
+	defer c.Close()
+
+	//wait group中始终有n+1个counter
+	waitGroup.Add(1)
+
+	//创建job队列
+	jobChan := make(chan bool, *thread)
+
+	switch *method {
+	case "list":
+		res, err := List(c, *bucket)
+		if err != nil {
+			logerr.Panicf("failed to list: %v", err)
+		}
+		for _, line := range res {
+			fmt.Println(line)
+		}
+	case "upload":
+		//待上传文件以列表形式存储在文件中
+		//按行读取文件，每个文件以goroutines形式上传
+		f, err := os.Open(*files)
+		if err != nil {
+			logerr.Panicf("failed to open list file: %v", err)
+		}
+		//记得关闭文件
+		defer f.Close()
+		//按行读取文件
+		br := bufio.NewReader(f)
+		for {
+			line, _, err := br.ReadLine()
+			if err == io.EOF {
+				break
+			}
+			object := strings.TrimPrefix(string(line), *prefix)
+			waitGroup.Add(1)
+			go Upload(c, *bucket, string(line), object, jobChan)
+		}
+	}
+	//decrease 最后一个counter
+	waitGroup.Done()
+	waitGroup.Wait()
+	close(jobChan)
+	log.Println("上传完成")
 }
