@@ -65,58 +65,65 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 }
 
 //上传单个文件
-func Upload(c *storage.Client, bucket string, file string, object string, jobChan chan bool) {
-	defer waitGroup.Done()
-	jobChan <- true
+func Upload(c *storage.Client, bucket string, jobChan chan string) {
 
-	//根据后缀检测Content-Type
-	fileArray := strings.Split(file, ".")
-	mtype := mime.TypeByExtension("." + fileArray[len(fileArray)-1])
-	if mtype == "" {
-		//默认 Content-Type
-		mtype = "application/octet-stream"
-	}
-	//读取单个文件
-	f, err := os.Open(file)
-	if err != nil {
-		logerr.Printf("failed to open %v: %v\n", file, err)
-		<-jobChan
-		return
-	}
-	defer f.Close()
+	//defer waitGroup.Done()
+	//jobChan <- true
+	for {
 
-	ctx := context.Background()
-	//获取object
-	o := c.Bucket(bucket).Object(object)
-	//上传文件
-	w := o.NewWriter(ctx)
-	if _, err := io.Copy(w, f); err != nil {
-		logerr.Printf("failed to uplaod %v: %v", file, err)
-		<-jobChan
-		return
-	}
-	if err := w.Close(); err != nil {
-		logerr.Printf("Writer.Close: %v", err)
-		<-jobChan
-		return
-	}
+		file, ok := <-jobChan
+		if !ok {
+			break
+		}
+		object := strings.TrimPrefix(file, *prefix)
+		//根据后缀检测Content-Type
+		fileArray := strings.Split(file, ".")
+		mtype := mime.TypeByExtension("." + fileArray[len(fileArray)-1])
+		if mtype == "" {
+			//默认 Content-Type
+			mtype = "application/octet-stream"
+		}
+		//读取单个文件
+		f, err := os.Open(file)
+		if err != nil {
+			logerr.Printf("failed to open %v: %v\n", file, err)
+			<-jobChan
+			return
+		}
+		defer f.Close()
 
-	//更新metadata
-	objectAttrsToUpdate := storage.ObjectAttrsToUpdate{}
-	objectAttrsToUpdate.ContentType = mtype
-	objectAttrsToUpdate.CacheControl = cacheMeta
-	if *cache == "false" {
-		objectAttrsToUpdate.CacheControl = noCacheMeta
-	}
+		ctx := context.Background()
+		//获取object
+		o := c.Bucket(bucket).Object(object)
+		//上传文件
+		w := o.NewWriter(ctx)
+		if _, err := io.Copy(w, f); err != nil {
+			logerr.Printf("failed to uplaod %v: %v", file, err)
+			<-jobChan
+			return
+		}
+		if err := w.Close(); err != nil {
+			logerr.Printf("Writer.Close: %v", err)
+			<-jobChan
+			return
+		}
 
-	if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
-		logerr.Printf("failed to update metadata of %v: %v", object, err)
-		<-jobChan
-		return
-	}
+		//更新metadata
+		objectAttrsToUpdate := storage.ObjectAttrsToUpdate{}
+		objectAttrsToUpdate.ContentType = mtype
+		objectAttrsToUpdate.CacheControl = cacheMeta
+		if *cache == "false" {
+			objectAttrsToUpdate.CacheControl = noCacheMeta
+		}
 
-	log.Printf("successful to upload： %v\n", object)
-	<-jobChan
+		if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
+			logerr.Printf("failed to update metadata of %v: %v", object, err)
+			<-jobChan
+			return
+		}
+
+		log.Printf("successful to upload： %v\n", object)
+	}
 }
 
 func main() {
@@ -142,7 +149,7 @@ func main() {
 	waitGroup.Add(1)
 
 	//创建job队列
-	jobChan := make(chan bool, *thread)
+	jobChan := make(chan string, *thread)
 
 	switch *method {
 	case "list":
@@ -154,6 +161,7 @@ func main() {
 			fmt.Println(line)
 		}
 	case "upload":
+		go Upload(c, *bucket, jobChan)
 		//待上传文件以列表形式存储在文件中
 		//按行读取文件，每个文件以goroutines形式上传
 		f, err := os.Open(*files)
@@ -169,9 +177,8 @@ func main() {
 			if err == io.EOF {
 				break
 			}
-			object := strings.TrimPrefix(string(line), *prefix)
 			waitGroup.Add(1)
-			go Upload(c, *bucket, string(line), object, jobChan)
+			jobChan <- string(line)
 		}
 	}
 	//decrease 最后一个counter
