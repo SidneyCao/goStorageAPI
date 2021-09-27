@@ -87,7 +87,6 @@ func Upload(c *storage.Client, bucket string, jobChan chan string) {
 		f, err := os.Open(file)
 		if err != nil {
 			logerr.Printf("failed to open %v: %v\n", file, err)
-			<-jobChan
 			return
 		}
 		defer f.Close()
@@ -99,12 +98,10 @@ func Upload(c *storage.Client, bucket string, jobChan chan string) {
 		w := o.NewWriter(ctx)
 		if _, err := io.Copy(w, f); err != nil {
 			logerr.Printf("failed to uplaod %v: %v", file, err)
-			<-jobChan
 			return
 		}
 		if err := w.Close(); err != nil {
 			logerr.Printf("Writer.Close: %v", err)
-			<-jobChan
 			return
 		}
 
@@ -118,7 +115,6 @@ func Upload(c *storage.Client, bucket string, jobChan chan string) {
 
 		if _, err := o.Update(ctx, objectAttrsToUpdate); err != nil {
 			logerr.Printf("failed to update metadata of %v: %v", object, err)
-			<-jobChan
 			return
 		}
 
