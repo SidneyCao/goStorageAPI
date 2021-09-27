@@ -24,7 +24,7 @@ var (
 	files  = flag.String("f", "", "文件列表 (默认为空)")
 	cache  = flag.String("c", "true", "是否缓存")
 	prefix = flag.String("p", "", "需要移除的文件前缀 (默认为空)")
-	thread = flag.Int("t", 5, "最大协程数")
+	gNum   = flag.Int("g", 5, "最大goroutine数量")
 )
 
 //缓存header内容
@@ -149,7 +149,7 @@ func main() {
 	waitGroup.Add(1)
 
 	//创建job队列
-	jobChan := make(chan string, *thread)
+	jobChan := make(chan string, *gNum)
 
 	switch *method {
 	case "list":
@@ -161,7 +161,10 @@ func main() {
 			fmt.Println(line)
 		}
 	case "upload":
-		go Upload(c, *bucket, jobChan)
+		//启动*gNum个协程
+		for i := 0; i < *gNum; i++ {
+			go Upload(c, *bucket, jobChan)
+		}
 		//待上传文件以列表形式存储在文件中
 		//按行读取文件，每个文件以goroutines形式上传
 		f, err := os.Open(*files)
