@@ -60,9 +60,9 @@ tail -f -n0 ${rsyncLog}| while read line; do
                 echo '{"taskID":"'${taskID}'","startTime":"'${dateUploadOF}'","status":"running"}' > ${taskResult}
         elif [[ ${fileName} == sent* ]];then
                 echo '开始上传需要缓存的文件'  
-                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload -p ${srcDir}/ -t 20 2>> ${taskLogDir}/${dateUpload}-$taskID.log
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-cache -m upload -p ${srcDir}/ -g 20 2>> ${taskLogDir}/${dateUpload}-$taskID.log
                 echo '开始上传不需要缓存的文件' 
-                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false -p ${srcDir}/ -t 20 2>> ${taskLogDir}/${dateUpload}-$taskID.log
+                ${goApiDir}/gcpStorageAPI -b ${gs} -f ${taskListDir}/${dateUpload}-$taskID-noCache -m upload -c false -p ${srcDir}/ -g 20 2>> ${taskLogDir}/${dateUpload}-$taskID.log
                 errNum=`wc -l ${taskLogDir}/${dateUpload}-$taskID.log | awk -F' ' '{print $1}'`
                 dateComplete=`date "+%Y-%m-%d %H:%M:%S"`
                 echo '{"taskID":"'${taskID}'","completeTime":"'${dateComplete}'","status":"completed","errNum":"'${errNum}'"}' > ${taskResult}
