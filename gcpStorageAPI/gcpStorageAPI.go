@@ -67,8 +67,7 @@ func List(c *storage.Client, bucket string) ([]string, error) {
 //上传单个文件
 func Upload(c *storage.Client, bucket string, jobChan chan string) {
 
-	//defer waitGroup.Done()
-	//jobChan <- true
+	defer waitGroup.Done()
 	for {
 
 		file, ok := <-jobChan
