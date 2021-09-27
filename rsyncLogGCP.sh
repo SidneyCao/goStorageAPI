@@ -41,10 +41,10 @@ function addTask(){
                 if [[ ${nocacheStatus} -eq 1 ]] && [[ ${srcDir}/${fileName} == *${nocacheFile} ]];then 
                         echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-noCache
                 else 
+                        touch ${taskListDir}/${dateUpload}-$taskID-noCache
                         echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-cache
                 fi
         else    
-                touch ${taskListDir}/${dateUpload}-$taskID-noCache
                 echo ''${srcDir}/${fileName}' 文件不存在'
         fi
 }
