@@ -38,7 +38,7 @@ function touchTask(){
 
 function addTask(){
         if [[ -f ${srcDir}/${fileName} ]];then
-                if [[ ${nocacheStatus} -eq 1 ]] && [[ ${srcDir}/${fileName} =~ *${nocacheFile}* ]];then 
+                if [[ ${nocacheStatus} -eq 1 ]] && [[ ${srcDir}/${fileName} =~ ${nocacheFile} ]];then 
                         echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-noCache
                 else 
                         touch ${taskListDir}/${dateUpload}-$taskID-noCache
