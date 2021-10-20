@@ -64,17 +64,17 @@ https://*{DOMAIN}*/*{YOUR_FILE}*
 
 请勿依赖rsync本地的相对位置，详见下面的例子
 举例：  
-rsync -av test.txt --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}  
+rsync -av test.txt --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}*
 上传后的链接：  
 https://*{DOMAIN}*/test.txt  
 
-rsync -av test/test.txt --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}  
+rsync -av test/test.txt --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}* 
 上传后的链接仍然会是：  
 https://*{DOMAIN}*/test.txt  
 
 
 正确的做法应该是：  
-rsync -av test/test.txt --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}/test/   
+rsync -av test/test.txt --port=*{PORT}* --password-file=secret *{USER}*@*{HOSTNAME}*::*{GAME_NAME}*/test/   
 上传后的链接：  
 https://*{DOMAIN}*/test/test.txt   
 
