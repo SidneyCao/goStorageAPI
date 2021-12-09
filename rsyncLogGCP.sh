@@ -30,9 +30,9 @@ source ${scriptDir}/getPara.sh
 gs=`echo "${gstore}"|sed 's/gs:\/\///g'`
 
 function touchTask(){
-        if [[ ${nocacheStatus} -eq 1 ]];then
-                touch ${taskListDir}/${dateUpload}-$taskID-noCache
-        fi
+        #if [[ ${nocacheStatus} -eq 1 ]];then
+        touch ${taskListDir}/${dateUpload}-$taskID-noCache
+        #fi
         touch ${taskListDir}/${dateUpload}-$taskID-cache
 }
 
@@ -41,7 +41,7 @@ function addTask(){
                 if [[ ${nocacheStatus} -eq 1 ]] && [[ "${srcDir}/${fileName}" =~ ${nocacheFile} ]];then 
                         echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-noCache
                 else 
-                        touch ${taskListDir}/${dateUpload}-$taskID-noCache
+                        #touch ${taskListDir}/${dateUpload}-$taskID-noCache
                         echo ${srcDir}/${fileName} >> ${taskListDir}/${dateUpload}-$taskID-cache
                 fi
         else    
